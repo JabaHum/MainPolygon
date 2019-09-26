@@ -7,8 +7,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.Color;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,13 +14,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -41,13 +39,15 @@ import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
         OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+
+
+    private LocationCallback mLocationCallback;
 
 
     TextView gps;
@@ -114,6 +114,22 @@ public class MainActivity extends AppCompatActivity implements
             alertDialog_save= builder_save.create();
             alertDialog_delete= builder_delete.create();
 
+
+
+            recordGps.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    Toast.makeText(getApplicationContext(),"Clicked on Add Cordinates",Toast.LENGTH_SHORT).show();
+
+
+                    //recordPoint();
+
+                    //calling this method to show our android custom alert dialog
+
+                }
+            });
+
 //start google maps
 
             initMap();
@@ -150,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
-        gotoLocationzoom(0.3246214,32.5740853,15);
+        //gotoLocationzoom(0.3246214,32.5740853,15);
 
 
         if (mGoogleMap != null){
@@ -158,7 +174,7 @@ public class MainActivity extends AppCompatActivity implements
             mGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
                 @Override
                 public void onMapLongClick(LatLng latLng) {
-                    MainActivity.this.setMarker("Local",latLng.latitude,latLng.longitude);
+                    MainActivity.this.setMarker("Locality",latLng.latitude,latLng.longitude);
                 }
             });
 
@@ -207,15 +223,17 @@ public class MainActivity extends AppCompatActivity implements
 
         //mGoogleMap.setMyLocationEnabled(true);
 
-/*
-mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .build();
 
         mGoogleApiClient.connect();
-* */
+
+
+
+
 
 
     }
@@ -232,7 +250,7 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
 
         LatLng ll = new LatLng(lat,lng);
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(ll,zoom);
-        mGoogleMap.moveCamera( cameraUpdate);
+        mGoogleMap.animateCamera( cameraUpdate);
 
     }
 
@@ -273,7 +291,7 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
 
 
     ArrayList<Marker> markers_list= new ArrayList<Marker>();
-    static  final int Polygon_Points = 10;
+    static  final int Polygon_Points = 5;
     Polygon shape;
 
     private void setMarker(String locality, double lat, double lng) {
@@ -287,7 +305,7 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
         * */
 
         if (markers_list.size()== Polygon_Points){
-
+                //removerEverything();
         }
 
 
@@ -333,7 +351,7 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
 
         CircleOptions options = new CircleOptions()
                 .center(latlng)
-                .radius(500)
+                .radius(10)
                 .fillColor(0x33FF0000)
                 .strokeColor(Color.BLUE)
                 .strokeWidth(3);
@@ -409,11 +427,31 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
+
+
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if (location == null) {
+
+            mLocationRequest = LocationRequest.create();
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            mLocationRequest.setInterval(2000);
+
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
+        else {
+
+            handleNewLocation(location);
+        }
+
+        /*
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(2000);
 
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
+        * */
+
 
 
 
@@ -433,7 +471,10 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
     @Override
     public void onLocationChanged(Location location) {
 
-        if (location == null){
+        //mLocationCallback.handleNewLocation(location);
+
+
+         if (location == null){
             Toast.makeText(this, "Cant get Current Location", Toast.LENGTH_SHORT).show();
         } else {
 
@@ -444,5 +485,131 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
 
         }
 
+
+
+
     }
+
+/*public  void apiConnect(){
+//        mGoogleApiClient.connect();
+    }
+
+    public  void apiDisconnect(){
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
+    }
+* */
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        /*
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
+        * */
+
+    }
+
+    /*
+     @Override
+    protected void onResume() {
+        super.onResume();
+        initMap();
+        //setUpMapIfNeeded();
+//        apiConnect();
+        //mGoogleApiClient.connect();
+    }
+    * */
+
+
+
+    public void handleNewLocation(Location location){
+
+        //Log.d(TAG, location.toString());
+
+        double currentLatitude = location.getLatitude();
+        double currentLongitude = location.getLongitude();
+        LatLng latLng = new LatLng(currentLatitude, currentLongitude);
+
+        recordPoint(new LatLng(currentLatitude, currentLongitude));
+        addMarker(latLng);
+
+
+    }
+
+    public void addMarker(LatLng latLng) {
+        MarkerOptions options = new MarkerOptions()
+                .position(latLng)
+                .title("I am here!");
+        mMarker = mGoogleMap.addMarker(options);
+
+        //mMarker.addMarker(options);
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
+    }
+
+    //ArrayList<Double> markers_list_updated = new ArrayList<Double>();
+    ArrayList<Double> Longitudes=  new ArrayList<>();
+    ArrayList<Double> Latitudes=  new ArrayList<>();
+
+    Polygon update_location_shape;
+
+    public void recordPoint(LatLng latLng) {
+
+
+
+        //Latitudes.add(latLng.latitude);
+        //Longitudes.add(latLng.longitude);
+        //Accuracy.add(location.getAccuracy());
+
+        //ArrayList<LatLng> markers_list_updated = new ArrayList<LatLng>();
+
+
+        //ArrayList<LatLng> list = new ArrayList<>();
+
+
+        double lat = latLng.latitude;
+        double lng = latLng.longitude;
+
+        Toast.makeText(this, "Ur Points "+lat+ "and" +lng+"", Toast.LENGTH_LONG).show();
+
+
+        /*
+        if (markers_list_updated.size() == 1){
+
+            markers_list_updated.get(0);
+
+            //addMarker(markers_list_updated.get(0));
+            //addMarker(markers_list_updated.get(1));
+
+
+        }else if (markers_list_updated.size() > 2){
+
+            for (int i =0;i<markers_list_updated.size();i++){
+
+                //addMarker( latLng(markers_list_updated.get(i).latitude,markers_list_updated.get(i).longitude));
+
+                //int length_= i+1;
+
+                //list_.add(new LatLng(Latitudes.get(j),Longitudes.get(j)));
+
+                //markers_list_updated.add(Latitudes.get(i),Longitudes.get(i));
+
+            }
+
+        }
+        else {
+
+        }
+        * */
+
+
+
+    }
+
+
 }
