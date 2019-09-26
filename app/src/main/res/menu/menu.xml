@@ -1,17 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.example.mainpolygon.MainActivity">
 
 
-    <item android:id="@+id/mapTypeNone"
-        android:title="None"/>
-    <item android:id="@+id/mapTypeNormal"
-        android:title="Normal"/>
-    <item android:id="@+id/mapTypeTerrain"
-        android:title="Terrain"/>
-    <item android:id="@+id/mapTypeSatellite"
-        android:title="Satellite"/>
-    <item android:id="@+id/mapTypeHybrid"
-        android:title="Hybrid"/>
+    <group android:id="@+id/group_1"
+        android:menuCategory="container">
+        <item android:id="@+id/mapTypeNone"
+            android:title="None"/>
+        <item android:id="@+id/mapTypeNormal"
+            android:title="Normal"/>
+        <item android:id="@+id/mapTypeTerrain"
+            android:title="Terrain"/>
+        <item android:id="@+id/mapTypeSatellite"
+            android:title="Satellite"/>
+        <item android:id="@+id/mapTypeHybrid"
+            android:title="Hybrid"/>
+    </group>
+
+    <group android:menuCategory="container">
+        <item
+            android:id="@+id/add_point"
+            android:icon="@drawable/ic_plus_icon"
+            app:showAsAction="always"
+            android:title="Add New Point" />
+        <item
+            android:id="@+id/save"
+            app:showAsAction="always"
+            android:title="Save" />
+
+    </group>
+
+
 </menu>

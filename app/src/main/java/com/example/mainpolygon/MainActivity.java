@@ -4,16 +4,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -45,6 +49,13 @@ public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
 
+
+    TextView gps;
+    AlertDialog.Builder builder,builder_save,builder_delete;
+    AlertDialog alertDialog,alertDialog_save, alertDialog_delete ;
+    Button recordGps,cancel,saveGarden,cancel_save,delete, cancel_delete;
+
+
     GoogleMap mGoogleMap;
     GoogleApiClient mGoogleApiClient;
 
@@ -55,6 +66,56 @@ public class MainActivity extends AppCompatActivity implements
         if (googleServicesAvailable()){
             Toast.makeText(this,"Google Play Services Are Available",Toast.LENGTH_SHORT).show();
             setContentView(R.layout.activity_main);
+
+
+            //before inflating the custom alert dialog layout, we will get the current activity viewgroup
+            android.view.ViewGroup viewGroup = (android.view.ViewGroup) findViewById(android.R.id.content);
+
+            //then we will inflate the custom alert dialog xml that we created
+            View dialogView = LayoutInflater.from(this).inflate(R.layout.add_new_point_dialog, viewGroup, false);
+
+            //then we will inflate the custom alert dialog xml that we created
+            View dialogView_save = LayoutInflater.from(this).inflate(R.layout.save_garden_dialog, viewGroup, false);
+
+            //then we will inflate the custom alert dialog xml that we created
+            View dialogView_delete = LayoutInflater.from(this).inflate(R.layout.delete_point_dialog, viewGroup, false);
+
+
+            gps= (TextView) dialogView.findViewById(R.id.gps);
+
+            recordGps= (Button) dialogView.findViewById(R.id.buttonOk);
+            saveGarden= (Button) dialogView_save.findViewById(R.id.buttonSave);
+
+            cancel_save= (Button) dialogView_save.findViewById(R.id.btnCancel);
+            cancel = (Button) dialogView.findViewById(R.id.buttonCancel);
+
+            cancel_delete= (Button) dialogView_delete.findViewById(R.id.btnCancel);
+            delete= (Button) dialogView_delete.findViewById(R.id.btnDelete);
+
+            //Edit text to pick values for long and lat
+
+            //Editextlat = findViewById(R.id.edt_lat);
+
+
+
+            //Now we need an AlertDialog.Builder object
+            builder = new AlertDialog.Builder(this);
+            builder_save = new AlertDialog.Builder(this);
+            builder_delete = new AlertDialog.Builder(this);
+
+
+            //setting the view of the builder to our custom view that we already inflated
+            builder.setView(dialogView);
+            builder_save.setView(dialogView_save);
+            builder_delete.setView(dialogView_delete);
+
+            //finally creating the alert dialog and displaying it
+            alertDialog= builder.create();
+            alertDialog_save= builder_save.create();
+            alertDialog_delete= builder_delete.create();
+
+//start google maps
+
             initMap();
         }else {
             Toast.makeText(this,"No Google Maps",Toast.LENGTH_SHORT).show();
@@ -324,6 +385,11 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
                 break;
             case R.id.mapTypeHybrid:
                 mGoogleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            case R.id.add_point:
+                showDialog();
+                break;
+            case R.id.save:
+                alertDialog_save.show();
                 break;
                 default:
                     break;
@@ -331,6 +397,11 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
 
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showDialog() {
+        alertDialog.show();
+
     }
 
     LocationRequest mLocationRequest;
