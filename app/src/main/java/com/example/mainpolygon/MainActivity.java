@@ -385,6 +385,7 @@ mGoogleApiClient = new GoogleApiClient.Builder(this)
                 break;
             case R.id.mapTypeHybrid:
                 mGoogleMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+                break;
             case R.id.add_point:
                 showDialog();
                 break;
