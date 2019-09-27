@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +40,7 @@ import com.google.android.gms.maps.model.PolygonOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public class MainActivity extends AppCompatActivity implements
         OnMapReadyCallback,
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements
 
     TextView mtextLat;
     TextView mtextLng;
+    EditText mEdtSaveGarden;
     ArrayList<Marker> markers_list_updated = new ArrayList<>();
 
 
@@ -122,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements
 
             mtextLat = (TextView) dialogView.findViewById(R.id.gps_lat);
             mtextLng = (TextView) dialogView.findViewById(R.id.gps_lng);
+            mEdtSaveGarden = (EditText) dialogView.findViewById(R.id.garden_name);
 
 
 
@@ -130,8 +134,8 @@ public class MainActivity extends AppCompatActivity implements
                 public void onClick(View v) {
 
                     //recordPoint();
-
-                    Toast.makeText(getApplicationContext(),"Clicked on Add Cordinates",Toast.LENGTH_SHORT).show();
+                    savePoints();
+                    //Toast.makeText(getApplicationContext(),"Clicked on Add Cordinates",Toast.LENGTH_SHORT).show();
 
 
                     //handleNewLocation();
@@ -576,7 +580,7 @@ public class MainActivity extends AppCompatActivity implements
         mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
 
 
-        markers_list_updated.add(mMarker);
+        //markers_list_updated.add(mMarker);
 
 
 
@@ -700,6 +704,62 @@ public class MainActivity extends AppCompatActivity implements
 
         }
         * */
+
+
+
+    }
+
+
+    ArrayList<String> mMarker_list_updated = new ArrayList<>();
+
+    ArrayList<Points> update_cordinates = new ArrayList<>();
+
+    //LinkedHashMap<String, Integer> markerLatLng = new LinkedHashMap<String, Integer>();
+
+    //LinkedHashMap<Marker, LatLng> mMarkerLatLnglist = new LinkedHashMap<Marker, LatLng>();
+
+
+    public void savePoints(){
+
+
+            Double  mLat_value ;
+            Double  mLng_value ;
+
+            String nLat_value = mtextLat.getText().toString();
+            String nLng_value = mtextLng.getText().toString();
+
+            mLat_value = Double.parseDouble(nLat_value);
+            mLng_value = Double.parseDouble(nLng_value);
+
+            //multiplePoints.put("point2", new MyCoord(100, 2000));
+
+            update_cordinates.add(new Points(mLat_value,mLng_value));
+
+            Toast.makeText(this, "Your Have Saved your Cordinates", Toast.LENGTH_SHORT).show();
+
+
+
+
+            //int nLat;
+            //int nLng;
+
+
+            //mMarker_list_updated.add(0,mLat_value);
+            //mMarker_list_updated.add(1,mLng_value);
+
+
+            //update_cordinates.add()
+
+
+
+
+    }
+
+
+    public void saveGarden(){
+
+
+        String save_garden = mEdtSaveGarden.getText().toString();
 
 
 
