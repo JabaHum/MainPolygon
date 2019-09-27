@@ -49,6 +49,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private LocationCallback mLocationCallback;
 
+    TextView mtextLat;
+    TextView mtextLng;
+    ArrayList<Marker> markers_list_updated = new ArrayList<>();
+
+
 
     TextView gps;
     AlertDialog.Builder builder,builder_save,builder_delete;
@@ -81,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements
             View dialogView_delete = LayoutInflater.from(this).inflate(R.layout.delete_point_dialog, viewGroup, false);
 
 
-            gps= (TextView) dialogView.findViewById(R.id.gps);
+            //gps= (TextView) dialogView.findViewById(R.id.gps);
 
             recordGps= (Button) dialogView.findViewById(R.id.buttonOk);
             saveGarden= (Button) dialogView_save.findViewById(R.id.buttonSave);
@@ -115,20 +120,30 @@ public class MainActivity extends AppCompatActivity implements
             alertDialog_delete= builder_delete.create();
 
 
+            mtextLat = (TextView) dialogView.findViewById(R.id.gps_lat);
+            mtextLng = (TextView) dialogView.findViewById(R.id.gps_lng);
+
+
 
             recordGps.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
+                    //recordPoint();
+
                     Toast.makeText(getApplicationContext(),"Clicked on Add Cordinates",Toast.LENGTH_SHORT).show();
 
 
-                    //recordPoint();
+                    //handleNewLocation();
 
                     //calling this method to show our android custom alert dialog
 
                 }
             });
+
+
+
+            //recordPoint();
 
 //start google maps
 
@@ -174,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements
             mGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
                 @Override
                 public void onMapLongClick(LatLng latLng) {
-                    MainActivity.this.setMarker("Locality",latLng.latitude,latLng.longitude);
+                    //MainActivity.this.setMarker("Locality",latLng.latitude,latLng.longitude);
                 }
             });
 
@@ -337,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements
                 .strokeColor(Color.RED);
 
         for (int i = 0 ; i < Polygon_Points; i++){
-             options.add(markers_list.get(i).getPosition());
+             options.add(markers_list_updated.get(i).getPosition());
 
         }
 
@@ -419,6 +434,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void showDialog() {
+        //recordPoint();
         alertDialog.show();
 
     }
@@ -473,18 +489,27 @@ public class MainActivity extends AppCompatActivity implements
 
         //mLocationCallback.handleNewLocation(location);
 
+        if (location == null){
 
-         if (location == null){
-            Toast.makeText(this, "Cant get Current Location", Toast.LENGTH_SHORT).show();
-        } else {
+            Toast.makeText(this, "Can't Get Location", Toast.LENGTH_SHORT).show();
 
-            LatLng userLocation =  new LatLng(location.getLatitude(),location.getLongitude());
+        }else {
 
-            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation,15);
-            mGoogleMap.animateCamera(cameraUpdate);
-
+            handleNewLocation(location);
         }
 
+        /*
+        if (location == null){
+                    Toast.makeText(this, "Cant get Current Location", Toast.LENGTH_SHORT).show();
+                } else {
+
+                    LatLng userLocation =  new LatLng(location.getLatitude(),location.getLongitude());
+
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation,25);
+                    mGoogleMap.animateCamera(cameraUpdate);
+
+                }
+        * */
 
 
 
@@ -526,6 +551,7 @@ public class MainActivity extends AppCompatActivity implements
     }
     * */
 
+    //ArrayList<Double> markers_list_updated = new ArrayList<Double>();
 
 
     public void handleNewLocation(Location location){
@@ -536,8 +562,33 @@ public class MainActivity extends AppCompatActivity implements
         double currentLongitude = location.getLongitude();
         LatLng latLng = new LatLng(currentLatitude, currentLongitude);
 
+
+        //addMarker(latLng);
         recordPoint(new LatLng(currentLatitude, currentLongitude));
-        addMarker(latLng);
+
+
+        MarkerOptions options = new MarkerOptions()
+                .position(latLng)
+                .title("I am here!");
+        mMarker = mGoogleMap.addMarker(options);
+
+        //mMarker.addMarker(options);
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
+
+
+        markers_list_updated.add(mMarker);
+
+
+
+
+
+        /*
+         if (markers_list_updated.size()== POLYGON_POINTS){
+            drawPolygon();
+        }
+        * */
+
+
 
 
     }
@@ -558,24 +609,67 @@ public class MainActivity extends AppCompatActivity implements
 
     Polygon update_location_shape;
 
+    public static final  int POLYGON_POINTS = 5;
+
     public void recordPoint(LatLng latLng) {
 
 
+        //LatLng latLng
+        //LatLng latLng =
 
         //Latitudes.add(latLng.latitude);
         //Longitudes.add(latLng.longitude);
         //Accuracy.add(location.getAccuracy());
 
-        //ArrayList<LatLng> markers_list_updated = new ArrayList<LatLng>();
+        //ArrayList<Marker> markers_list_updated = new ArrayList<>();
 
 
         //ArrayList<LatLng> list = new ArrayList<>();
 
 
+
+
         double lat = latLng.latitude;
         double lng = latLng.longitude;
 
+        String lat_value;
+        String lng_value;
+
+        //String lat_value = mtextLat.toString();
+        //String lng_value = mtextLng.toString();
+
+        lat_value = Double.toString(lat);
+        lng_value = Double.toString(lng);
+
+        mtextLat.setText(lat_value);
+        mtextLng.setText(lng_value);
+
+/*if (markers_list_updated.size() ==  POLYGON_POINTS){
+
+            drawPolygon();
+
+        }
+* */
+
+
+
+
+
+        //markers_list_updated.add(mGoogleMap..latitude,latLng.longitude);
+
+        /*
+          if (markers_list_updated.size()== POLYGON_POINTS){
+            drawPolygon();
+        }
+        * */
+
+
+
         Toast.makeText(this, "Ur Points "+lat+ "and" +lng+"", Toast.LENGTH_LONG).show();
+
+
+        //mtextLat.setText();
+        //mtextLng.setText(lng);
 
 
         /*
