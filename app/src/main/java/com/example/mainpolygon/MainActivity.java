@@ -37,6 +37,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,10 +52,19 @@ public class MainActivity extends AppCompatActivity implements
 
 
     private LocationCallback mLocationCallback;
+    private static final long FASTEST_INTERVAL = 1000 * 5;
+    private static final long INTERVAL = 1000 * 10;
+
+
 
     TextView mtextLat;
     TextView mtextLng;
     EditText mEdtSaveGarden;
+    Button mBtnSaveGarden;
+    TextView mtextAccuracy;
+
+    Location mCurrentLocation;
+
     ArrayList<Marker> markers_list_updated = new ArrayList<>();
 
 
@@ -66,6 +77,13 @@ public class MainActivity extends AppCompatActivity implements
 
     GoogleMap mGoogleMap;
     GoogleApiClient mGoogleApiClient;
+
+    protected void createLocationRequest() {
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+        mLocationRequest.setInterval(INTERVAL);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,6 +144,9 @@ public class MainActivity extends AppCompatActivity implements
             mtextLat = (TextView) dialogView.findViewById(R.id.gps_lat);
             mtextLng = (TextView) dialogView.findViewById(R.id.gps_lng);
             mEdtSaveGarden = (EditText) dialogView.findViewById(R.id.garden_name);
+            mtextAccuracy = (TextView)dialogView.findViewById(R.id.gps_accuracy);
+
+            //mBtnSaveGarden =(Button)dialogView.findViewById(R.id.sa)
 
 
 
@@ -141,6 +162,16 @@ public class MainActivity extends AppCompatActivity implements
                     //handleNewLocation();
 
                     //calling this method to show our android custom alert dialog
+
+                }
+            });
+
+
+            saveGarden.setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                save_Garden();
 
                 }
             });
@@ -241,6 +272,7 @@ public class MainActivity extends AppCompatActivity implements
         //gotoLocationzoom(0.3246214,32.5740853,15);
 
         //mGoogleMap.setMyLocationEnabled(true);
+        createLocationRequest();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -341,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements
 
         if (markers_list.size() == Polygon_Points){
 
-            drawPolygon();
+            //drawPolygon();
 
         }
 
@@ -356,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements
                 .strokeColor(Color.RED);
 
         for (int i = 0 ; i < Polygon_Points; i++){
-             options.add(markers_list_updated.get(i).getPosition());
+             options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
 
         }
 
@@ -448,15 +480,11 @@ public class MainActivity extends AppCompatActivity implements
     public void onConnected(@Nullable Bundle bundle) {
 
 
-
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
 
         if (location == null) {
 
-            mLocationRequest = LocationRequest.create();
-            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-            mLocationRequest.setInterval(2000);
-
+            createLocationRequest();
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
         else {
@@ -491,16 +519,24 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
 
+        mCurrentLocation = location;
+        //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+
         //mLocationCallback.handleNewLocation(location);
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
 
         if (location == null){
-
+            createLocationRequest();
             Toast.makeText(this, "Can't Get Location", Toast.LENGTH_SHORT).show();
 
         }else {
 
             handleNewLocation(location);
         }
+
+
+
 
         /*
         if (location == null){
@@ -558,12 +594,21 @@ public class MainActivity extends AppCompatActivity implements
     //ArrayList<Double> markers_list_updated = new ArrayList<Double>();
 
 
+    ArrayList<Float> Accuracy=  new ArrayList<>();
+
     public void handleNewLocation(Location location){
 
         //Log.d(TAG, location.toString());
 
         double currentLatitude = location.getLatitude();
         double currentLongitude = location.getLongitude();
+
+        float latlngAccuracy = location.getAccuracy();
+
+        Accuracy.add(latlngAccuracy);
+
+
+        createLocationRequest();
         LatLng latLng = new LatLng(currentLatitude, currentLongitude);
 
 
@@ -636,6 +681,9 @@ public class MainActivity extends AppCompatActivity implements
         double lat = latLng.latitude;
         double lng = latLng.longitude;
 
+
+        //String accuracy_value = Accuracy.toString();
+        String accuracy_value = Accuracy.toString();
         String lat_value;
         String lng_value;
 
@@ -644,9 +692,11 @@ public class MainActivity extends AppCompatActivity implements
 
         lat_value = Double.toString(lat);
         lng_value = Double.toString(lng);
+        //accuracy_value = Accuracy.toString();
 
         mtextLat.setText(lat_value);
         mtextLng.setText(lng_value);
+        mtextAccuracy.setText(accuracy_value);
 
 /*if (markers_list_updated.size() ==  POLYGON_POINTS){
 
@@ -714,7 +764,7 @@ public class MainActivity extends AppCompatActivity implements
 
     ArrayList<Points> update_cordinates = new ArrayList<>();
 
-    //LinkedHashMap<String, Integer> markerLatLng = new LinkedHashMap<String, Integer>();
+    LinkedHashMap<String, Integer> LatLng_saved = new LinkedHashMap<String, Integer>();
 
     //LinkedHashMap<Marker, LatLng> mMarkerLatLnglist = new LinkedHashMap<Marker, LatLng>();
 
@@ -724,6 +774,8 @@ public class MainActivity extends AppCompatActivity implements
 
             Double  mLat_value ;
             Double  mLng_value ;
+
+            //float mLatlng_accuracy;
 
             String nLat_value = mtextLat.getText().toString();
             String nLng_value = mtextLng.getText().toString();
@@ -735,10 +787,44 @@ public class MainActivity extends AppCompatActivity implements
 
             update_cordinates.add(new Points(mLat_value,mLng_value));
 
-            Toast.makeText(this, "Your Have Saved your Cordinates", Toast.LENGTH_SHORT).show();
+
+
+            for (int i = 0; i < update_cordinates.size(); i++){
+
+                if (update_cordinates.size() == 2){
+                    //drawPolygon();
+
+
+                    PolylineOptions options = new PolylineOptions()
+                            .add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()))
+                            .color(Color.BLUE)
+                            .width(5);
+
+                    line = mGoogleMap.addPolyline(options);
+
+                    //alertDialog_save.dismiss();
 
 
 
+                }else if (update_cordinates.size() < 5){
+
+                    PolygonOptions options = new PolygonOptions()
+                            .fillColor( 0x33000FF)
+                            .strokeWidth(3)
+                            .strokeColor(Color.RED);
+
+                    //for (int i = 0 ; i < Polygon_Points; i++){
+                        options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
+
+                    //}
+
+                    shape = mGoogleMap.addPolygon(options);
+
+                }
+
+                Toast.makeText(this, "You Have Saved your Cordinates", Toast.LENGTH_SHORT).show();
+
+            }
 
             //int nLat;
             //int nLng;
@@ -756,10 +842,42 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    public void saveGarden(){
+    public void save_Garden(){
 
 
         String save_garden = mEdtSaveGarden.getText().toString();
+
+        Toast.makeText(this, "Garden Saved", Toast.LENGTH_SHORT).show();
+
+        /*
+          for (int i =0 ; i < LatLng_saved.size() ; i++ ){
+
+            LatLng_saved.put(save_garden,update_cordinates.);
+        }
+        * */
+
+
+        //drawPolygon();
+
+    }
+
+
+    Polyline line;
+
+    public void drawLine(){
+
+
+        for (int j =0 ; j < update_cordinates.size();j++ ){
+
+            PolylineOptions options = new PolylineOptions()
+                    .add(new LatLng(update_cordinates.get(j).getX(),update_cordinates.get(j).getY()))
+                    .color(Color.BLUE)
+                    .width(5);
+
+            line = mGoogleMap.addPolyline(options);
+
+
+        }
 
 
 

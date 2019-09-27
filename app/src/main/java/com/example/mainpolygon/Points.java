@@ -1,15 +1,22 @@
 package com.example.mainpolygon;
 
+import android.graphics.Point;
+
 public class Points {
 
     Double x;
     Double y;
 
 
+
+
+
     public Points(Double x, Double y) {
         this.x = x;
         this.y = y;
     }
+
+
 
     public Double getX() {
         return x;
