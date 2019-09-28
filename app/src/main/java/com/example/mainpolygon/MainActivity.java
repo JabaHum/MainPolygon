@@ -9,6 +9,7 @@ import android.app.Dialog;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +22,8 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -42,6 +45,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 public class MainActivity extends AppCompatActivity implements
@@ -53,7 +57,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private LocationCallback mLocationCallback;
     private static final long FASTEST_INTERVAL = 1000 * 5;
-    private static final long INTERVAL = 1000 * 10;
+    private static final long INTERVAL = 1000 * 5;
+    public static final String TAG = MainActivity.class.getSimpleName();
 
 
 
@@ -88,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        createLocationRequest();
 
         if (googleServicesAvailable()){
             Toast.makeText(this,"Google Play Services Are Available",Toast.LENGTH_SHORT).show();
@@ -156,12 +163,6 @@ public class MainActivity extends AppCompatActivity implements
 
                     //recordPoint();
                     savePoints();
-                    //Toast.makeText(getApplicationContext(),"Clicked on Add Cordinates",Toast.LENGTH_SHORT).show();
-
-
-                    //handleNewLocation();
-
-                    //calling this method to show our android custom alert dialog
 
                 }
             });
@@ -176,11 +177,6 @@ public class MainActivity extends AppCompatActivity implements
                 }
             });
 
-
-
-            //recordPoint();
-
-//start google maps
 
             initMap();
         }else {
@@ -229,50 +225,9 @@ public class MainActivity extends AppCompatActivity implements
             });
 
 
-            /*
-                      mGoogleMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
-                @Override
-                public void onMarkerDragStart(Marker marker) {
-
-                }
-
-                @Override
-                public void onMarkerDrag(Marker marker) {
-
-                }
-
-                @Override
-                public void onMarkerDragEnd(Marker marker) {
-
-                    Geocoder mGeocorder =  new Geocoder(MainActivity.this);
-
-                    LatLng ll = marker.getPosition();
-
-                    double lat = ll.latitude;
-                    double lng = ll.longitude;
-                    List<Address> list  = null;
-
-                    try {
-                        list  = mGeocorder.getFromLocation(lat,lng,1);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    Address address = list.get(0);
-
-                    marker.setTitle(address.getLocality());
-                    //marker.
-
-
-                }
-            });
-*/
-
         }
-        //gotoLocationzoom(0.3246214,32.5740853,15);
 
-        //mGoogleMap.setMyLocationEnabled(true);
-        createLocationRequest();
+        //createLocationRequest();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
@@ -310,33 +265,9 @@ public class MainActivity extends AppCompatActivity implements
 
     public void geoLocate(View view) throws IOException {
 
-/*
-   EditText locate = findViewById(R.id.locate);
-        String location = locate.getText().toString();
-
-
-        Geocoder geocoder = new Geocoder(this);
-        List<Address> list = geocoder.getFromLocationName(location,1);
-
-        Address address = list.get(0);
-
-        String locality = address.getLocality();
-
-        Toast.makeText(this, "Location"+locality, Toast.LENGTH_SHORT).show();
-
-
-        double lat = address.getLatitude();
-        double lng = address.getLongitude();
-
-        gotoLocationzoom(lat,lng,15);
-
-        setMarker(locality, lat, lng);
-* */
-
-
-
 
     }
+
 
     Circle circle;
 
@@ -346,14 +277,7 @@ public class MainActivity extends AppCompatActivity implements
     Polygon shape;
 
     private void setMarker(String locality, double lat, double lng) {
-        /*
-          if (mMarker != null){
 
-            removeEverything();
-            mMarker.remove();
-
-        }
-        * */
 
         if (markers_list.size()== Polygon_Points){
                 //removerEverything();
@@ -421,11 +345,6 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    /*
-     public void geoLocate() {
-    }
-    * */
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -479,29 +398,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-
-        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-
-        if (location == null) {
-
-            createLocationRequest();
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        }
-        else {
-
-            handleNewLocation(location);
-        }
-
-        /*
-        mLocationRequest = LocationRequest.create();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(2000);
-
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,mLocationRequest,this);
-        * */
-
-
-
+        createLocationRequest();
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
 
     }
@@ -519,86 +417,37 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
 
-        mCurrentLocation = location;
-        //mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        //double onChean
 
-        //mLocationCallback.handleNewLocation(location);
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-
-
-        if (location == null){
-            createLocationRequest();
-            Toast.makeText(this, "Can't Get Location", Toast.LENGTH_SHORT).show();
-
-        }else {
-
-            handleNewLocation(location);
-        }
-
-
-
-
-        /*
-        if (location == null){
-                    Toast.makeText(this, "Cant get Current Location", Toast.LENGTH_SHORT).show();
-                } else {
-
-                    LatLng userLocation =  new LatLng(location.getLatitude(),location.getLongitude());
-
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(userLocation,25);
-                    mGoogleMap.animateCamera(cameraUpdate);
-
-                }
-        * */
-
+        handleNewLocation(location);
 
 
     }
 
-/*public  void apiConnect(){
-//        mGoogleApiClient.connect();
-    }
-
-    public  void apiDisconnect(){
-        if (mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-            mGoogleApiClient.disconnect();
-        }
-    }
-* */
 
 
     @Override
     protected void onPause() {
         super.onPause();
-        /*
-        if (mGoogleApiClient.isConnected()) {
-            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-            mGoogleApiClient.disconnect();
-        }
-        * */
+
 
     }
 
-    /*
+
      @Override
     protected void onResume() {
         super.onResume();
-        initMap();
-        //setUpMapIfNeeded();
-//        apiConnect();
-        //mGoogleApiClient.connect();
-    }
-    * */
 
-    //ArrayList<Double> markers_list_updated = new ArrayList<Double>();
+
+    }
 
 
     ArrayList<Float> Accuracy=  new ArrayList<>();
 
     public void handleNewLocation(Location location){
 
-        //Log.d(TAG, location.toString());
+
+        //createLocationRequest();
 
         double currentLatitude = location.getLatitude();
         double currentLongitude = location.getLongitude();
@@ -607,35 +456,26 @@ public class MainActivity extends AppCompatActivity implements
 
         Accuracy.add(latlngAccuracy);
 
-
-        createLocationRequest();
+        //createLocationRequest();
         LatLng latLng = new LatLng(currentLatitude, currentLongitude);
 
+        if (Accuracy.size() <= 10){
 
-        //addMarker(latLng);
-        recordPoint(new LatLng(currentLatitude, currentLongitude));
+            MarkerOptions options = new MarkerOptions()
+                    .position(latLng)
+                    .title("I am here!");
+            mMarker = mGoogleMap.addMarker(options);
 
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
 
-        MarkerOptions options = new MarkerOptions()
-                .position(latLng)
-                .title("I am here!");
-        mMarker = mGoogleMap.addMarker(options);
-
-        //mMarker.addMarker(options);
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
-
-
-        //markers_list_updated.add(mMarker);
+            recordPoint(new LatLng(currentLatitude, currentLongitude));
 
 
 
-
-
-        /*
-         if (markers_list_updated.size()== POLYGON_POINTS){
-            drawPolygon();
         }
-        * */
+
+
+
 
 
 
@@ -652,8 +492,8 @@ public class MainActivity extends AppCompatActivity implements
         mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
     }
 
-    //ArrayList<Double> markers_list_updated = new ArrayList<Double>();
     ArrayList<Double> Longitudes=  new ArrayList<>();
+
     ArrayList<Double> Latitudes=  new ArrayList<>();
 
     Polygon update_location_shape;
@@ -662,99 +502,21 @@ public class MainActivity extends AppCompatActivity implements
 
     public void recordPoint(LatLng latLng) {
 
-
-        //LatLng latLng
-        //LatLng latLng =
-
-        //Latitudes.add(latLng.latitude);
-        //Longitudes.add(latLng.longitude);
-        //Accuracy.add(location.getAccuracy());
-
-        //ArrayList<Marker> markers_list_updated = new ArrayList<>();
-
-
-        //ArrayList<LatLng> list = new ArrayList<>();
-
-
-
-
         double lat = latLng.latitude;
         double lng = latLng.longitude;
 
-
-        //String accuracy_value = Accuracy.toString();
         String accuracy_value = Accuracy.toString();
         String lat_value;
         String lng_value;
 
-        //String lat_value = mtextLat.toString();
-        //String lng_value = mtextLng.toString();
-
         lat_value = Double.toString(lat);
         lng_value = Double.toString(lng);
-        //accuracy_value = Accuracy.toString();
 
         mtextLat.setText(lat_value);
         mtextLng.setText(lng_value);
         mtextAccuracy.setText(accuracy_value);
 
-/*if (markers_list_updated.size() ==  POLYGON_POINTS){
-
-            drawPolygon();
-
-        }
-* */
-
-
-
-
-
-        //markers_list_updated.add(mGoogleMap..latitude,latLng.longitude);
-
-        /*
-          if (markers_list_updated.size()== POLYGON_POINTS){
-            drawPolygon();
-        }
-        * */
-
-
-
-        Toast.makeText(this, "Ur Points "+lat+ "and" +lng+"", Toast.LENGTH_LONG).show();
-
-
-        //mtextLat.setText();
-        //mtextLng.setText(lng);
-
-
-        /*
-        if (markers_list_updated.size() == 1){
-
-            markers_list_updated.get(0);
-
-            //addMarker(markers_list_updated.get(0));
-            //addMarker(markers_list_updated.get(1));
-
-
-        }else if (markers_list_updated.size() > 2){
-
-            for (int i =0;i<markers_list_updated.size();i++){
-
-                //addMarker( latLng(markers_list_updated.get(i).latitude,markers_list_updated.get(i).longitude));
-
-                //int length_= i+1;
-
-                //list_.add(new LatLng(Latitudes.get(j),Longitudes.get(j)));
-
-                //markers_list_updated.add(Latitudes.get(i),Longitudes.get(i));
-
-            }
-
-        }
-        else {
-
-        }
-        * */
-
+        Toast.makeText(this, "Ur Points " +lat+" and "+lng+" ", Toast.LENGTH_LONG).show();
 
 
     }
@@ -764,9 +526,7 @@ public class MainActivity extends AppCompatActivity implements
 
     ArrayList<Points> update_cordinates = new ArrayList<>();
 
-    LinkedHashMap<String, Integer> LatLng_saved = new LinkedHashMap<String, Integer>();
-
-    //LinkedHashMap<Marker, LatLng> mMarkerLatLnglist = new LinkedHashMap<Marker, LatLng>();
+    HashMap<String, Integer> LatLng_saved = new HashMap<String, Integer>();
 
 
     public void savePoints(){
@@ -783,60 +543,127 @@ public class MainActivity extends AppCompatActivity implements
             mLat_value = Double.parseDouble(nLat_value);
             mLng_value = Double.parseDouble(nLng_value);
 
-            //multiplePoints.put("point2", new MyCoord(100, 2000));
+
+            Toast.makeText(this, "You Have saved your Cordinates", Toast.LENGTH_SHORT).show();
+
 
             update_cordinates.add(new Points(mLat_value,mLng_value));
 
 
 
-            for (int i = 0; i < update_cordinates.size(); i++){
 
-                if (update_cordinates.size() == 2){
-                    //drawPolygon();
+            //if (Accuracy.size()){
+
+            //}
+
+            //for (int i = 0; i < update_cordinates.size(); i++){
+
+                if (update_cordinates.size()  == 1){
 
 
-                    PolylineOptions options = new PolylineOptions()
+                    Toast.makeText(this, "Add Coordinates (Another Point)", Toast.LENGTH_SHORT).show();
+
+                    //Toast.makeText(this, "Latitudes"+update_cordinates.get(i).getX()+"\n"+"Longitudes"+update_cordinates.get(i).getY(), Toast.LENGTH_SHORT).show();
+
+
+                    /*
+                      PolylineOptions options = new PolylineOptions()
                             .add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()))
                             .color(Color.BLUE)
                             .width(5);
 
                     line = mGoogleMap.addPolyline(options);
-
-                    //alertDialog_save.dismiss();
-
+                    * */
 
 
-                }else if (update_cordinates.size() < 5){
+                } else if (update_cordinates.size() > 2){
 
-                    PolygonOptions options = new PolygonOptions()
-                            .fillColor( 0x33000FF)
-                            .strokeWidth(3)
-                            .strokeColor(Color.RED);
+                    for (int i = 0 ; i < update_cordinates.size();i++){
 
-                    //for (int i = 0 ; i < Polygon_Points; i++){
+                        PolylineOptions options = new PolylineOptions()
+                                .add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()))
+                                .color(Color.BLUE)
+                                .width(5);
+                        line = mGoogleMap.addPolyline(options);
+
+
+                    }
+
+
+
+                }else  if (update_cordinates.size() > 5){
+
+                    for (int i =0 ; i < update_cordinates.size(); i++){
+
+                        PolygonOptions options = new PolygonOptions()
+                                .fillColor(0x33000FFF)
+                                .strokeWidth(3)
+                                .strokeColor(Color.BLUE);
+
                         options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
 
-                    //}
+                        shape = mGoogleMap.addPolygon(options);
 
-                    shape = mGoogleMap.addPolygon(options);
+                    }
+
+
+
+
+
+                }else {
+
+                    Toast.makeText(this, "No Cordinates have been Added", Toast.LENGTH_SHORT).show();
+
 
                 }
 
-                Toast.makeText(this, "You Have Saved your Cordinates", Toast.LENGTH_SHORT).show();
+                /**
+                 * if (update_cordinates.size() == 1){
+                 *
+                 *
+                 *                     Log.d(TAG, "First if Statement");
+                 *
+                 *                     Toast.makeText(this, "First If Statement", Toast.LENGTH_SHORT).show();
+                 *
+                 *
+                 *                       PolylineOptions options = new PolylineOptions()
+                 *                             .add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()))
+                 *                             .color(Color.BLUE)
+                 *                             .width(5);
+                 *
+                 *                     line = mGoogleMap.addPolyline(options);
+                 *
+                 *
+                 *
+                 *
+                 *
+                 *
+                 *                 }else if (update_cordinates.size() > 2){
+                 *
+                 *                     Log.d(TAG, "Second if Statement");
+                 *                     Toast.makeText(this, "Second If Statement", Toast.LENGTH_SHORT).show();
+                 *
+                 *
+                 *
+                 *
+                 *                        PolygonOptions options = new PolygonOptions()
+                 *                             .fillColor( 0x33000FF)
+                 *                             .strokeWidth(3)
+                 *                             .strokeColor(Color.RED);
+                 *
+                 *                         options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
+                 *
+                 *
+                 *                     shape = mGoogleMap.addPolygon(options);
+                 *
+                 *
+                 *
+                 *
+                 *                 }
+                 * */
 
-            }
 
-            //int nLat;
-            //int nLng;
-
-
-            //mMarker_list_updated.add(0,mLat_value);
-            //mMarker_list_updated.add(1,mLng_value);
-
-
-            //update_cordinates.add()
-
-
+            //}
 
 
     }
@@ -845,19 +672,9 @@ public class MainActivity extends AppCompatActivity implements
     public void save_Garden(){
 
 
-        String save_garden = mEdtSaveGarden.getText().toString();
+        //String save_garden = mEdtSaveGarden.getText().toString();
 
         Toast.makeText(this, "Garden Saved", Toast.LENGTH_SHORT).show();
-
-        /*
-          for (int i =0 ; i < LatLng_saved.size() ; i++ ){
-
-            LatLng_saved.put(save_garden,update_cordinates.);
-        }
-        * */
-
-
-        //drawPolygon();
 
     }
 
@@ -875,10 +692,7 @@ public class MainActivity extends AppCompatActivity implements
                     .width(5);
 
             line = mGoogleMap.addPolyline(options);
-
-
         }
-
 
 
     }
