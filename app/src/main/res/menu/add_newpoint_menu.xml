@@ -12,7 +12,5 @@
             app:showAsAction="always"
             android:title="Save" />
 
-
-
     </group>
 </menu>

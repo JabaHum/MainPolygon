@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
         OnMapReadyCallback,
@@ -166,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 }
             });
+
 
 
             saveGarden.setOnClickListener( new View.OnClickListener() {
@@ -402,6 +404,7 @@ public class MainActivity extends AppCompatActivity implements
         LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
 
 
+
     }
 
     @Override
@@ -454,25 +457,25 @@ public class MainActivity extends AppCompatActivity implements
 
         float latlngAccuracy = location.getAccuracy();
 
-        Accuracy.add(latlngAccuracy);
+        //Accuracy.add(latlngAccuracy);
 
         //createLocationRequest();
         LatLng latLng = new LatLng(currentLatitude, currentLongitude);
 
-        if (Accuracy.size() <= 10){
+        //if (Accuracy.size() <= 10){
 
-            MarkerOptions options = new MarkerOptions()
-                    .position(latLng)
-                    .title("I am here!");
-            mMarker = mGoogleMap.addMarker(options);
+            //MarkerOptions options = new MarkerOptions()
+                  //  .position(latLng)
+                    //.title("I am here!");
+           // mMarker = mGoogleMap.addMarker(options);
 
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
 
-            recordPoint(new LatLng(currentLatitude, currentLongitude));
+            recordPoint(new LatLng(currentLatitude, currentLongitude),latlngAccuracy);
 
 
 
-        }
+       // }
 
 
 
@@ -489,44 +492,39 @@ public class MainActivity extends AppCompatActivity implements
         mMarker = mGoogleMap.addMarker(options);
 
         //mMarker.addMarker(options);
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
+        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
     }
-
-    ArrayList<Double> Longitudes=  new ArrayList<>();
-
-    ArrayList<Double> Latitudes=  new ArrayList<>();
-
-    Polygon update_location_shape;
 
     public static final  int POLYGON_POINTS = 5;
 
-    public void recordPoint(LatLng latLng) {
+    public void recordPoint(LatLng latLng, float latlng_accuracy) {
 
         double lat = latLng.latitude;
         double lng = latLng.longitude;
+        float  accuracy = latlng_accuracy;
 
-        String accuracy_value = Accuracy.toString();
         String lat_value;
         String lng_value;
 
         lat_value = Double.toString(lat);
         lng_value = Double.toString(lng);
 
+        String mAccuracy = String.valueOf(accuracy);
+
         mtextLat.setText(lat_value);
         mtextLng.setText(lng_value);
-        mtextAccuracy.setText(accuracy_value);
+        mtextAccuracy.setText(mAccuracy);
 
         Toast.makeText(this, "Ur Points " +lat+" and "+lng+" ", Toast.LENGTH_LONG).show();
 
 
     }
 
-
-    ArrayList<String> mMarker_list_updated = new ArrayList<>();
-
     ArrayList<Points> update_cordinates = new ArrayList<>();
 
-    HashMap<String, Integer> LatLng_saved = new HashMap<String, Integer>();
+    //ArrayList<LatLng> selected_cordinates = new ArrayList<>();
+    ArrayList<LatLng> selected_cordinates = new ArrayList<>();
+
 
 
     public void savePoints(){
@@ -534,137 +532,109 @@ public class MainActivity extends AppCompatActivity implements
 
             Double  mLat_value ;
             Double  mLng_value ;
+            float   mAcc;
 
             //float mLatlng_accuracy;
 
             String nLat_value = mtextLat.getText().toString();
             String nLng_value = mtextLng.getText().toString();
+            String nAcc =  mtextAccuracy.getText().toString();
 
             mLat_value = Double.parseDouble(nLat_value);
             mLng_value = Double.parseDouble(nLng_value);
 
 
-            Toast.makeText(this, "You Have saved your Cordinates", Toast.LENGTH_SHORT).show();
-
-
-            update_cordinates.add(new Points(mLat_value,mLng_value));
 
 
 
-
-            //if (Accuracy.size()){
-
-            //}
-
-            //for (int i = 0; i < update_cordinates.size(); i++){
-
-                if (update_cordinates.size()  == 1){
+            selected_cordinates.add(new LatLng(mLat_value,mLng_value));
 
 
-                    Toast.makeText(this, "Add Coordinates (Another Point)", Toast.LENGTH_SHORT).show();
+            //mDrawLine();
 
-                    //Toast.makeText(this, "Latitudes"+update_cordinates.get(i).getX()+"\n"+"Longitudes"+update_cordinates.get(i).getY(), Toast.LENGTH_SHORT).show();
+            //mDrawPolygon(selected_cordinates);
 
+        //Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_SHORT).show();
 
-                    /*
-                      PolylineOptions options = new PolylineOptions()
-                            .add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()))
-                            .color(Color.BLUE)
-                            .width(5);
+            //int selected_cordinates.size() = 5;
 
-                    line = mGoogleMap.addPolyline(options);
-                    * */
+            //mDrawLine();
 
+        //int length = selected_cordinates.size();
 
-                } else if (update_cordinates.size() > 2){
+        // Toast.makeText(this, "You have saved"+mLat_value+" \n"+mLng_value+"\n Of Accuracy \n"+nAcc, Toast.LENGTH_LONG).show();
 
-                    for (int i = 0 ; i < update_cordinates.size();i++){
+    }
 
-                        PolylineOptions options = new PolylineOptions()
-                                .add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()))
-                                .color(Color.BLUE)
-                                .width(5);
-                        line = mGoogleMap.addPolyline(options);
+    private void mDrawPolygon(ArrayList<LatLng> selected_cordinates ) {
+
+        int length = selected_cordinates.size();
 
 
-                    }
+        if (length >=4 && length <=100){
+
+            for (int i =0 ; i <length;i++){
+
+                PolygonOptions polygonOptions = new PolygonOptions();
+
+                if (selected_cordinates.get(i)!= null && selected_cordinates.get(i) != null){
 
 
 
-                }else  if (update_cordinates.size() > 5){
+                    //LatLng latLng_polygon = new LatLng( selected_cordinates.get(i).latitude,selected_cordinates.get(i).longitude);
+                    polygonOptions.fillColor( 0x33000FF);
+                    polygonOptions.strokeColor(Color.RED);
+                    polygonOptions.strokeWidth(3);
+                    polygonOptions.add(new LatLng( selected_cordinates.get(i).latitude,selected_cordinates.get(i).longitude));
 
-                    for (int i =0 ; i < update_cordinates.size(); i++){
-
-                        PolygonOptions options = new PolygonOptions()
-                                .fillColor(0x33000FFF)
-                                .strokeWidth(3)
-                                .strokeColor(Color.BLUE);
-
-                        options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
-
-                        shape = mGoogleMap.addPolygon(options);
-
-                    }
-
-
-
-
-
-                }else {
-
-                    Toast.makeText(this, "No Cordinates have been Added", Toast.LENGTH_SHORT).show();
-
+                    shape = mGoogleMap.addPolygon(polygonOptions);
 
                 }
 
-                /**
-                 * if (update_cordinates.size() == 1){
-                 *
-                 *
-                 *                     Log.d(TAG, "First if Statement");
-                 *
-                 *                     Toast.makeText(this, "First If Statement", Toast.LENGTH_SHORT).show();
-                 *
-                 *
-                 *                       PolylineOptions options = new PolylineOptions()
-                 *                             .add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()))
-                 *                             .color(Color.BLUE)
-                 *                             .width(5);
-                 *
-                 *                     line = mGoogleMap.addPolyline(options);
-                 *
-                 *
-                 *
-                 *
-                 *
-                 *
-                 *                 }else if (update_cordinates.size() > 2){
-                 *
-                 *                     Log.d(TAG, "Second if Statement");
-                 *                     Toast.makeText(this, "Second If Statement", Toast.LENGTH_SHORT).show();
-                 *
-                 *
-                 *
-                 *
-                 *                        PolygonOptions options = new PolygonOptions()
-                 *                             .fillColor( 0x33000FF)
-                 *                             .strokeWidth(3)
-                 *                             .strokeColor(Color.RED);
-                 *
-                 *                         options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
-                 *
-                 *
-                 *                     shape = mGoogleMap.addPolygon(options);
-                 *
-                 *
-                 *
-                 *
-                 *                 }
-                 * */
+            }
+            Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Polygon Has Been Drawn", Toast.LENGTH_SHORT).show();
+
+        }else  {
+            Toast.makeText(this, "You can Only draw Poly with 4 Points and Beyond", Toast.LENGTH_SHORT).show();
+        }
 
 
-            //}
 
+
+    }
+
+    Polyline line;
+
+    private void mDrawLine(ArrayList<LatLng> selected_cordinates) {
+        int length = selected_cordinates.size();
+
+
+        if (length >=1 && length <=3){
+
+            for (int j = 0 ;j < length; j++){
+
+                PolylineOptions options = new PolylineOptions();
+
+                if (selected_cordinates.get(j)!= null && selected_cordinates.get(j) != null){
+
+
+                    //LatLng latLng = new LatLng( selected_cordinates.get(i).latitude,selected_cordinates.get(i).longitude);
+                    options.add(new LatLng( selected_cordinates.get(j).latitude,selected_cordinates.get(j).longitude));
+                    options.color(Color.BLUE);
+                    options.width(5);
+
+                    line = mGoogleMap.addPolyline(options);
+
+                }
+            }
+
+            Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Polygon Has Been Drawn", Toast.LENGTH_SHORT).show();
+
+        } else {
+            Toast.makeText(this,"You can only Draw a line with 3 Points",Toast.LENGTH_LONG).show();
+        }
 
     }
 
@@ -672,30 +642,19 @@ public class MainActivity extends AppCompatActivity implements
     public void save_Garden(){
 
 
+        //mDrawLine();
+        //mDrawPolygon(selected_cordinates);
+        mDrawLine(selected_cordinates);
+
+        //Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_SHORT).show();
+
         //String save_garden = mEdtSaveGarden.getText().toString();
 
-        Toast.makeText(this, "Garden Saved", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "Garden Saved", Toast.LENGTH_SHORT).show();
 
     }
 
 
-    Polyline line;
-
-    public void drawLine(){
-
-
-        for (int j =0 ; j < update_cordinates.size();j++ ){
-
-            PolylineOptions options = new PolylineOptions()
-                    .add(new LatLng(update_cordinates.get(j).getX(),update_cordinates.get(j).getY()))
-                    .color(Color.BLUE)
-                    .width(5);
-
-            line = mGoogleMap.addPolyline(options);
-        }
-
-
-    }
 
 
 }
