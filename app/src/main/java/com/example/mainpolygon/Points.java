@@ -1,7 +1,5 @@
 package com.example.mainpolygon;
 
-import android.graphics.Point;
-
 public class Points {
 
     Double x;

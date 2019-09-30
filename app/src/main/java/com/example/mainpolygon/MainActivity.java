@@ -241,9 +241,6 @@ public class MainActivity extends AppCompatActivity implements
 
 
 
-
-
-
     }
 
     private void  gotoLocation(double lat,double lng){
@@ -303,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements
 
         }
 
-        circle = drawCircle(new LatLng(lat,lng));
+        //circle = drawCircle(new LatLng(lat,lng));
     }
 
     private void drawPolygon() {
@@ -314,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements
                 .strokeColor(Color.RED);
 
         for (int i = 0 ; i < Polygon_Points; i++){
-             options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
+             //options.add(new LatLng(update_cordinates.get(i).getX(),update_cordinates.get(i).getY()));
 
         }
 
@@ -469,33 +466,15 @@ public class MainActivity extends AppCompatActivity implements
                     //.title("I am here!");
            // mMarker = mGoogleMap.addMarker(options);
 
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,25));
 
             recordPoint(new LatLng(currentLatitude, currentLongitude),latlngAccuracy);
 
 
-
        // }
 
-
-
-
-
-
-
     }
 
-    public void addMarker(LatLng latLng) {
-        MarkerOptions options = new MarkerOptions()
-                .position(latLng)
-                .title("I am here!");
-        mMarker = mGoogleMap.addMarker(options);
-
-        //mMarker.addMarker(options);
-        mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-    }
-
-    public static final  int POLYGON_POINTS = 5;
 
     public void recordPoint(LatLng latLng, float latlng_accuracy) {
 
@@ -520,7 +499,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    ArrayList<Points> update_cordinates = new ArrayList<>();
+    //ArrayList<Points> update_cordinates = new ArrayList<>();
 
     //ArrayList<LatLng> selected_cordinates = new ArrayList<>();
     ArrayList<LatLng> selected_cordinates = new ArrayList<>();
@@ -544,25 +523,18 @@ public class MainActivity extends AppCompatActivity implements
             mLng_value = Double.parseDouble(nLng_value);
 
 
+            LatLng latLng = new LatLng(mLat_value,mLng_value);
 
 
+            MarkerOptions options = new MarkerOptions();
+            options.position(latLng);
+            options.title("I am Here");
 
-            selected_cordinates.add(new LatLng(mLat_value,mLng_value));
+            mMarker = mGoogleMap.addMarker(options);
 
+            selected_cordinates.add(latLng);
+            //selected_cordinates.add(mMarker);
 
-            //mDrawLine();
-
-            //mDrawPolygon(selected_cordinates);
-
-        //Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_SHORT).show();
-
-            //int selected_cordinates.size() = 5;
-
-            //mDrawLine();
-
-        //int length = selected_cordinates.size();
-
-        // Toast.makeText(this, "You have saved"+mLat_value+" \n"+mLng_value+"\n Of Accuracy \n"+nAcc, Toast.LENGTH_LONG).show();
 
     }
 
@@ -573,13 +545,11 @@ public class MainActivity extends AppCompatActivity implements
 
         if (length >=4 && length <=100){
 
-            for (int i =0 ; i <length;i++){
+            for (int i =0 ; i <length-1;i++){
 
                 PolygonOptions polygonOptions = new PolygonOptions();
 
                 if (selected_cordinates.get(i)!= null && selected_cordinates.get(i) != null){
-
-
 
                     //LatLng latLng_polygon = new LatLng( selected_cordinates.get(i).latitude,selected_cordinates.get(i).longitude);
                     polygonOptions.fillColor( 0x33000FF);
@@ -605,36 +575,98 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     Polyline line;
+    Polyline line2;
 
     private void mDrawLine(ArrayList<LatLng> selected_cordinates) {
+
         int length = selected_cordinates.size();
 
 
         if (length >=1 && length <=3){
 
-            for (int j = 0 ;j < length; j++){
+            for (int j = 0 ;j < length-1; j++){
 
-                PolylineOptions options = new PolylineOptions();
-
-                if (selected_cordinates.get(j)!= null && selected_cordinates.get(j) != null){
+                //if (selected_cordinates.get(j) != null && selected_cordinates.get(j) != null){
 
 
-                    //LatLng latLng = new LatLng( selected_cordinates.get(i).latitude,selected_cordinates.get(i).longitude);
-                    options.add(new LatLng( selected_cordinates.get(j).latitude,selected_cordinates.get(j).longitude));
-                    options.color(Color.BLUE);
-                    options.width(5);
+                    LatLng latLng = new LatLng( selected_cordinates.get(j).latitude,selected_cordinates.get(j).longitude);
+                    //options.add(new LatLng( selected_cordinates.get(j).latitude,selected_cordinates.get(j).longitude));
+                    PolylineOptions options = new PolylineOptions();
+                        options.add(latLng);
+                        //options.add(selected_cordinates.get(j).getPosition());
+                        options.color(Color.BLUE);
+                        options.width(5);
 
                     line = mGoogleMap.addPolyline(options);
 
-                }
+               //}
             }
 
-            Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_LONG).show();
             Toast.makeText(this, "Polygon Has Been Drawn", Toast.LENGTH_SHORT).show();
 
         } else {
             Toast.makeText(this,"You can only Draw a line with 3 Points",Toast.LENGTH_LONG).show();
         }
+
+    }
+
+    private void drawCircle(ArrayList<LatLng> selected_cordinates) {
+
+        int length = selected_cordinates.size();
+
+        if (length >=1 && length <=3){
+
+            for (int i =0 ; i <length-1;i++){
+
+
+                LatLng latLng = new LatLng(selected_cordinates.get(i).latitude,selected_cordinates.get(i).longitude);
+
+                CircleOptions options = new CircleOptions()
+                        .center(latLng)
+                        .radius(10)
+                        .fillColor(0x33FF0000)
+                        .strokeColor(Color.BLUE)
+                        .strokeWidth(3);
+
+                circle = mGoogleMap.addCircle(options);
+
+
+            }
+
+            Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Polygon Has Been Drawn", Toast.LENGTH_SHORT).show();
+
+        }else {
+
+            Toast.makeText(this,"You can only Draw a line with 3 Points",Toast.LENGTH_LONG).show();
+
+        }
+
+
+
+    }
+
+
+
+    public void drawPolyline( ArrayList<LatLng> selected_cordinates ){
+
+        PolylineOptions polylineOptions = new PolylineOptions();
+        polylineOptions.addAll(selected_cordinates);
+        polylineOptions.width(10);
+        polylineOptions.color(Color.RED);
+
+        line2 = mGoogleMap.addPolyline(polylineOptions);
+
+        /*
+         Polyline  polyline = mGoogleMap.addPolyline( new PolylineOptions()
+                .addAll(selected_cordinates)
+                .width(5)
+                .color(Color.RED));
+
+        return polyline;
+        * */
+
 
     }
 
@@ -644,7 +676,14 @@ public class MainActivity extends AppCompatActivity implements
 
         //mDrawLine();
         //mDrawPolygon(selected_cordinates);
-        mDrawLine(selected_cordinates);
+        //mDrawLine(selected_cordinates);
+
+
+         //drawCircle(selected_cordinates);
+
+         drawPolyline(selected_cordinates);
+
+
 
         //Toast.makeText(this, "Your Saved Values"+selected_cordinates, Toast.LENGTH_SHORT).show();
 
